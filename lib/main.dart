@@ -11,8 +11,25 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   Hive.registerAdapter(WaterIntakeAdapter());
-  await NotificationService().init();
-  runApp(const MainApp());
+
+  final notificationService = NotificationService();
+  await notificationService.init();
+
+  final waterService = WaterService();
+  await waterService.init(); // Await the init method of WaterService
+
+  final settingsService = SettingsService();
+  await settingsService.init(); // Await the init method of SettingsService
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: waterService),
+        ChangeNotifierProvider.value(value: settingsService),
+      ],
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -20,12 +37,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => WaterService()),
-        ChangeNotifierProvider(create: (_) => SettingsService()),
-      ],
-      child: const MaterialApp(home: HomeScreen()),
-    );
+    return const MaterialApp(home: HomeScreen());
   }
 }

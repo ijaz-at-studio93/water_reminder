@@ -13,10 +13,10 @@ class SettingsService with ChangeNotifier {
 
   SettingsService() {
     _userSettings = UserSettings(dailyGoal: _defaultDailyGoal);
-    _loadSettings();
   }
 
-  Future<void> _loadSettings() async {
+  Future<void> init() async {
+    // Public init method
     _prefs = await SharedPreferences.getInstance();
     final dailyGoal = _prefs.getInt(_dailyGoalKey) ?? _defaultDailyGoal;
     _userSettings = UserSettings(dailyGoal: dailyGoal);

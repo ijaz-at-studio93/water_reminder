@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:water_reminder/services/settings_service.dart';
 import 'package:water_reminder/services/water_service.dart';
+import 'package:water_reminder/screens/history_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,6 +13,15 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Water Reminder'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
@@ -40,8 +50,9 @@ class HomeScreen extends StatelessWidget {
                         value: progress,
                         strokeWidth: 10,
                         backgroundColor: Colors.blue.shade100,
-                        valueColor:
-                            const AlwaysStoppedAnimation<Color>(Colors.blue),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Colors.blue,
+                        ),
                       ),
                     ),
                     Column(
@@ -92,7 +103,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _showCustomAmountDialog(BuildContext context, WaterService waterService) {
+  void _showCustomAmountDialog(
+    BuildContext context,
+    WaterService waterService,
+  ) {
     final TextEditingController controller = TextEditingController();
     showDialog(
       context: context,

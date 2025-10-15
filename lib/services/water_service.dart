@@ -9,13 +9,10 @@ class WaterService with ChangeNotifier {
 
   List<WaterIntake> get waterIntakes => _waterIntakeBox.values.toList();
 
-  WaterService() {
-    _init();
-  }
+  WaterService(); // No call to init() here
 
-  Future<void> _init() async {
-    await Hive.initFlutter();
-    Hive.registerAdapter(WaterIntakeAdapter());
+  Future<void> init() async {
+    // Public init method
     _waterIntakeBox = await Hive.openBox<WaterIntake>(_waterIntakeBoxName);
     notifyListeners();
   }
