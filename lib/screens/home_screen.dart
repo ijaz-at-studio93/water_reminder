@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:water_reminder/services/settings_service.dart';
 import 'package:water_reminder/services/water_service.dart';
 import 'package:water_reminder/screens/history_screen.dart';
+import 'package:water_reminder/screens/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -25,7 +26,10 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Navigate to settings screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
             },
           ),
         ],
