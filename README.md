@@ -13,7 +13,8 @@ A Flutter application designed to help users track their daily water intake, set
 
 ## Screenshots
 
-(Will be added here once the UI is more complete)
+<img width="994" height="697" alt="Screenshot 2025-11-02 at 11 23 33 PM" src="https://github.com/user-attachments/assets/b7eca6e4-c05c-421a-810f-5a612be11acc" />
+
 
 ## Installation
 
