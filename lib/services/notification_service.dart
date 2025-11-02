@@ -65,84 +65,146 @@ class NotificationService {
       macOS: darwinNotificationDetails,
     );
 
+    final scheduledTZ = tz.TZDateTime.from(scheduledTime, tz.local);
+
     await _flutterLocalNotificationsPlugin.zonedSchedule(
       notificationId,
       title,
       body,
-      tz.TZDateTime.from(scheduledTime, tz.local),
+      scheduledTZ,
       platformChannelSpecifics,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
     );
+  }
+
+  Future<bool> checkPermissions() async {
+    try {
+      final macOSImplementation = _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            MacOSFlutterLocalNotificationsPlugin
+          >();
+
+      if (macOSImplementation != null) {
+        final result = await macOSImplementation.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+        return result ?? false;
+      }
+
+      final iOSImplementation = _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
+
+      if (iOSImplementation != null) {
+        final result = await iOSImplementation.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+        return result ?? false;
+      }
+
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<void> scheduleHourlyReminders({
     required TimeOfDay startTime,
     required TimeOfDay endTime,
     bool isAllDayReminders = false,
+    int intervalMinutes = 60,
   }) async {
     await cancelAllNotifications();
 
+    final hasPermission = await checkPermissions();
+    if (!hasPermission) {
+      return;
+    }
+
     final now = DateTime.now();
     int notificationId = 0;
+    int scheduledCount = 0;
+    const maxScheduledNotifications = 120;
 
     if (isAllDayReminders) {
-      for (int hour = 0; hour < 24; hour++) {
-        DateTime scheduledTime = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          hour,
-          0,
-        );
+      DateTime currentTime = now.add(const Duration(minutes: 1));
+      currentTime = DateTime(
+        currentTime.year,
+        currentTime.month,
+        currentTime.day,
+        currentTime.hour,
+        currentTime.minute,
+      );
 
-        if (scheduledTime.isBefore(now)) {
-          scheduledTime = scheduledTime.add(const Duration(days: 1));
+      final endOfDay = DateTime(now.year, now.month, now.day, 23, 59);
+
+      while (currentTime.isBefore(endOfDay) ||
+          currentTime.isAtSameMomentAs(endOfDay)) {
+        if (scheduledCount >= maxScheduledNotifications) {
+          break;
         }
 
         await scheduleNotification(
           title: 'Time to drink water! 💧',
           body: 'Stay hydrated! Remember to drink some water.',
-          scheduledTime: scheduledTime,
+          scheduledTime: currentTime,
           notificationId: notificationId++,
         );
+
+        scheduledCount++;
+        currentTime = currentTime.add(Duration(minutes: intervalMinutes));
       }
     } else {
-      int currentHour = startTime.hour;
-      final reminderMinute = startTime.minute;
+      DateTime startDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        startTime.hour,
+        startTime.minute,
+      );
 
-      while (currentHour <= endTime.hour) {
-        final shouldSchedule =
-            currentHour < endTime.hour ||
-            (currentHour == endTime.hour && reminderMinute <= endTime.minute);
+      DateTime endDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        endTime.hour,
+        endTime.minute,
+      );
 
-        if (shouldSchedule) {
-          final notificationTime = TimeOfDay(
-            hour: currentHour,
-            minute: reminderMinute,
-          );
+      if (endDateTime.isBefore(startDateTime)) {
+        endDateTime = endDateTime.add(const Duration(days: 1));
+      }
 
-          DateTime scheduledTime = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            notificationTime.hour,
-            notificationTime.minute,
-          );
+      if (startDateTime.isBefore(now)) {
+        startDateTime = now.add(Duration(minutes: intervalMinutes));
+        startDateTime = DateTime(
+          startDateTime.year,
+          startDateTime.month,
+          startDateTime.day,
+          startDateTime.hour,
+          startDateTime.minute,
+        );
+      }
 
-          if (scheduledTime.isBefore(now)) {
-            scheduledTime = scheduledTime.add(const Duration(days: 1));
-          }
+      DateTime currentTime = startDateTime;
 
-          await scheduleNotification(
-            title: 'Time to drink water! 💧',
-            body: 'Stay hydrated! Remember to drink some water.',
-            scheduledTime: scheduledTime,
-            notificationId: notificationId++,
-          );
-        }
+      while ((currentTime.isBefore(endDateTime) ||
+              currentTime.isAtSameMomentAs(endDateTime)) &&
+          scheduledCount < maxScheduledNotifications) {
+        await scheduleNotification(
+          title: 'Time to drink water! 💧',
+          body: 'Stay hydrated! Remember to drink some water.',
+          scheduledTime: currentTime,
+          notificationId: notificationId++,
+        );
 
-        currentHour++;
+        scheduledCount++;
+        currentTime = currentTime.add(Duration(minutes: intervalMinutes));
       }
     }
   }
