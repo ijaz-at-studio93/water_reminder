@@ -19,7 +19,12 @@ void main() async {
   await waterService.init(); // Await the init method of WaterService
 
   final settingsService = SettingsService();
-  await settingsService.init(); // Await the init method of SettingsService
+  await settingsService.init();
+
+  await notificationService.scheduleHourlyReminders(
+    startTime: settingsService.userSettings.reminderStartTime,
+    endTime: settingsService.userSettings.reminderEndTime,
+  );
 
   runApp(
     MultiProvider(
@@ -27,16 +32,49 @@ void main() async {
         ChangeNotifierProvider.value(value: waterService),
         ChangeNotifierProvider.value(value: settingsService),
       ],
-      child: const MainApp(),
+      child: const MyApp(),
     ),
   );
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  // Renamed MainApp to MyApp
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: HomeScreen());
+    return MaterialApp(
+      title: 'Water Reminder',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(fontSize: 57.0, fontWeight: FontWeight.bold),
+          titleLarge: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
+          bodyLarge: TextStyle(fontSize: 16.0, height: 1.5),
+          bodyMedium: TextStyle(fontSize: 14.0, height: 1.4),
+          labelSmall: TextStyle(fontSize: 11.0, color: Colors.grey),
+        ),
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(fontSize: 57.0, fontWeight: FontWeight.bold),
+          titleLarge: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
+          bodyLarge: TextStyle(fontSize: 16.0, height: 1.5),
+          bodyMedium: TextStyle(fontSize: 14.0, height: 1.4),
+          labelSmall: TextStyle(fontSize: 11.0, color: Colors.grey),
+        ),
+      ),
+      themeMode: ThemeMode.system, // Follow system theme by default
+      home: const HomeScreen(),
+    );
   }
 }

@@ -34,4 +34,47 @@ class WaterService with ChangeNotifier {
         )
         .fold(0.0, (sum, item) => sum + item.amount);
   }
+
+  List<WaterIntake> get todayIntakes {
+    final today = DateTime.now();
+    return _waterIntakeBox.values
+        .where(
+          (intake) =>
+              intake.timestamp.year == today.year &&
+              intake.timestamp.month == today.month &&
+              intake.timestamp.day == today.day,
+        )
+        .toList();
+  }
+
+  Future<void> undoLastIntake() async {
+    if (_waterIntakeBox.isEmpty) return;
+
+    final sortedIntakes = _waterIntakeBox.values.toList()
+      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+    if (sortedIntakes.isNotEmpty) {
+      final lastIntake = sortedIntakes.first;
+      await lastIntake.delete();
+      notifyListeners();
+    }
+  }
+
+  Future<void> resetTodayIntake() async {
+    final today = DateTime.now();
+    final todayIntakes = _waterIntakeBox.values
+        .where(
+          (intake) =>
+              intake.timestamp.year == today.year &&
+              intake.timestamp.month == today.month &&
+              intake.timestamp.day == today.day,
+        )
+        .toList();
+
+    for (final intake in todayIntakes) {
+      await intake.delete();
+    }
+
+    notifyListeners();
+  }
 }

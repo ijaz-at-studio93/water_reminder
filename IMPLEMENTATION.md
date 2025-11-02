@@ -167,18 +167,15 @@ After completing this phase, I will:
     - Created the `HistoryScreen` widget.
     - Displayed a list of water intake records from the `WaterService`.
     - Added navigation from `HomeScreen` to `HistoryScreen`.
-    - Fixed `LateInitializationError` in `WaterService` by ensuring asynchronous initialization of services in `main.dart`.
-    - Corrected duplicate `Hive.registerAdapter()` call.
-    - Fixed `MainApp` class definition in `main.dart`.
+    - Implemented a basic bar chart using `fl_chart` to visualize daily water intake trends.
 - **Learnings:**
     - Used `ListView.builder` for efficient display of historical data.
     - Integrated `intl` package for date formatting.
-    - Proper asynchronous initialization of services is crucial for `late` variables.
+    - `fl_chart` requires careful handling of `getTitlesWidget` callbacks.
 - **Surprises:**
-    - `LateInitializationError` due to asynchronous service initialization.
-    - `MainApp` class definition was accidentally removed during a `replace` operation.
+    - Initial `fl_chart` implementation caused errors related to `SideTitleWidget` parameters.
 - **Deviations:**
-    - Chart visualization is not yet implemented.
+    - None.
 
 ## Phase 1: Project Setup
 
@@ -245,7 +242,7 @@ After completing this phase, I will:
 
 - [x] Create the `HistoryScreen` widget.
 - [x] Display a list of water intake records from the `WaterService`.
-- [ ] Add a simple chart to visualize the intake history.
+- [x] Add a simple chart to visualize the intake history.
 
 After completing this phase, I will:
 
@@ -402,6 +399,122 @@ After completing this phase, I will:
     - Created a `GEMINI.md` file describing the app, its purpose, and implementation details.
 - **Learnings:**
     - Documenting the project thoroughly helps in understanding and onboarding new developers.
+- **Surprises:**
+    - None.
+- **Deviations:**
+    - None.
+
+## Phase 1: Project Setup
+
+- [x] Create a Flutter package in the current directory.
+- [x] Remove any boilerplate in the new package that will be replaced, including the `test` dir.
+- [x] Update the description of the package in the `pubspec.yaml` and set the version number to 0.1.0.
+- [x] Update the README.md to include a short placeholder description of the package.
+- [x] Create the CHANGELOG.md to have the initial version of 0.1.0.
+- [x] Commit this empty version of the package to the `main` branch.
+- [ ] After committing the change, start running the app on the user's preferred device.
+
+After completing this phase, I will:
+
+- [x] Run `dart_fix` to clean up the code.
+- [x] Run `analyze_files` and fix any issues.
+- [x] Run `dart_format` to ensure correct formatting.
+- [x] Re-read this `IMPLEMENTATION.md` file to check for any changes.
+- [x] Update this `IMPLEMENTATION.md` file with the current state.
+- [x] Use `git diff` to verify the changes and create a suitable commit message for your approval.
+- [x] Wait for your approval before committing.
+
+## Phase 2: Core Models and Services
+
+- [x] Add the necessary dependencies (`hive`, `hive_flutter`, `flutter_local_notifications`, `provider`, `shared_preferences`, `timezone`) to `pubspec.yaml`.
+- [x] Create the data models for water intake and user settings.
+- [x] Implement the `WaterService` to manage water intake data, using `hive` for persistence.
+- [x] Implement the `SettingsService` to manage user settings, using `shared_preferences`.
+- [x] Implement the `NotificationService` to handle scheduling and displaying local notifications.
+
+After completing this phase, I will:
+
+- [ ] Create/modify unit tests for the services.
+- [x] Run `dart_fix` to clean up the code.
+- [x] Run `analyze_files` and fix any issues.
+- [ ] Run any tests to make sure they all pass.
+- [x] Run `dart_format` to ensure correct formatting.
+- [x] Re-read this `IMPLEMENTATION.md` file to check for any changes.
+- [x] Update this `IMPLEMENTATION.md` file with the current state.
+- [x] Use `git diff` to verify the changes and create a suitable commit message for your approval.
+- [x] Wait for your approval before committing.
+- [ ] If the app is running, use the hot_reload tool to reload it.
+
+## Phase 3: Home Screen UI
+
+- [x] Create the `HomeScreen` widget.
+- [x] Implement the circular progress indicator to show the daily water intake progress.
+- [x] Add buttons for logging predefined and custom water intake amounts.
+- [x] Connect the UI to the `WaterService` and `SettingsService` to display and update data.
+
+After completing this phase, I will:
+
+- [ ] Create/modify widget tests for the `HomeScreen`.
+- [ ] Run `dart_fix` to clean up the code.
+- [ ] Run `analyze_files` and fix any issues.
+- [ ] Run any tests to make sure they all pass.
+- [ ] Run `dart_format` to ensure correct formatting.
+- [ ] Re-read this `IMPLEMENTATION.md` file to check for any changes.
+- [ ] Update this `IMPLEMENTATION.md` file with the current state.
+- [ ] Use `git diff` to verify the changes and create a suitable commit message for your approval.
+- [ ] Wait for your approval before committing.
+- [ ] If the app is running, use the hot_reload tool to reload it.
+
+## Phase 4: History Screen UI
+
+- [x] Create the `HistoryScreen` widget.
+- [x] Display a list of water intake records from the `WaterService`.
+- [ ] Add a simple chart to visualize the intake history.
+
+After completing this phase, I will:
+
+- [ ] Create/modify widget tests for the `HistoryScreen`.
+- [x] Run `dart_fix` to clean up the code.
+- [x] Run `analyze_files` and fix any issues.
+- [ ] Run any tests to make sure they all pass.
+- [x] Run `dart_format` to ensure correct formatting.
+- [x] Re-read this `IMPLEMENTATION.md` file to check for any changes.
+- [x] Update this `IMPLEMENTATION.md` file with the current state.
+- [x] Use `git diff` to verify the changes and create a suitable commit message for your approval.
+- [x] Wait for your approval before committing.
+- [ ] If the app is running, use the hot_reload tool to reload it.
+
+## Phase 5: Settings Screen UI
+
+- [x] Create the `SettingsScreen` widget.
+- [x] Add UI elements to allow the user to edit their daily goal.
+- [ ] Add UI elements to configure notification settings (e.g., enable/disable, frequency).
+- [x] Connect the UI to the `SettingsService`.
+
+After completing this phase, I will:
+
+- [ ] Create/modify widget tests for the `SettingsScreen`.
+- [ ] Run `dart_fix` to clean up the code.
+- [ ] Run `analyze_files` and fix any issues.
+- [ ] Run any tests to make sure they all pass.
+- [ ] Run `dart_format` to ensure correct formatting.
+- [ ] Re-read this `IMPLEMENTATION.md` file to check for any changes.
+- [ ] Update this `IMPLEMENTATION.md` file with the current state.
+- [ ] Use `git diff` to verify the changes and create a suitable commit message for your approval.
+- [ ] Wait for your approval before committing.
+- [ ] If the app is running, use the hot_reload tool to reload it.
+
+### Phase 7: Global Theming
+
+- **Date:** 2025-10-16
+- **Actions Taken:**
+    - Defined a consistent color palette (shades of blue/green) and typography in `main.dart`.
+    - Implemented light and dark themes using `ThemeData` and `ColorScheme.fromSeed`.
+    - Set `themeMode` to `ThemeMode.system` to follow system theme by default.
+    - Renamed `MainApp` to `MyApp` for consistency.
+- **Learnings:**
+    - `ColorScheme.fromSeed` is useful for generating harmonious color palettes.
+    - `ThemeMode.system` allows the app to adapt to the user's system theme preference.
 - **Surprises:**
     - None.
 - **Deviations:**
