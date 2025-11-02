@@ -21,14 +21,14 @@ To get a local copy up and running, follow these simple steps.
 
 ### Prerequisites
 
-- Flutter SDK (version X.X.X or higher)
-- Dart SDK (version X.X.X or higher)
+- Flutter SDK (version 3.35.7 or higher)
+- Dart SDK (version 3.9.2 or higher)
 
 ### Setup
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your_username/water_reminder.git
+   git clone https://github.com/YOUR_USERNAME/water_reminder.git
    cd water_reminder
    ```
 2. Get dependencies:
