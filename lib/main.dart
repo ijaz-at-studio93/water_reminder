@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:water_reminder/models/water_intake.dart';
@@ -24,6 +26,7 @@ void main() async {
   await notificationService.scheduleHourlyReminders(
     startTime: settingsService.userSettings.reminderStartTime,
     endTime: settingsService.userSettings.reminderEndTime,
+    isAllDayReminders: settingsService.userSettings.isAllDayReminders,
   );
 
   runApp(
@@ -51,6 +54,15 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         useMaterial3: true,
+        cardTheme: CardThemeData(
+          elevation: defaultTargetPlatform == TargetPlatform.macOS ? 0 : 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: defaultTargetPlatform == TargetPlatform.macOS
+                ? BorderSide(color: Colors.grey.withOpacity(0.2), width: 0.5)
+                : BorderSide.none,
+          ),
+        ),
         textTheme: const TextTheme(
           displayLarge: TextStyle(fontSize: 57.0, fontWeight: FontWeight.bold),
           titleLarge: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
@@ -65,6 +77,15 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
+        cardTheme: CardThemeData(
+          elevation: defaultTargetPlatform == TargetPlatform.macOS ? 0 : 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: defaultTargetPlatform == TargetPlatform.macOS
+                ? BorderSide(color: Colors.grey.withOpacity(0.2), width: 0.5)
+                : BorderSide.none,
+          ),
+        ),
         textTheme: const TextTheme(
           displayLarge: TextStyle(fontSize: 57.0, fontWeight: FontWeight.bold),
           titleLarge: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),

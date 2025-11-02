@@ -79,30 +79,21 @@ class NotificationService {
   Future<void> scheduleHourlyReminders({
     required TimeOfDay startTime,
     required TimeOfDay endTime,
+    bool isAllDayReminders = false,
   }) async {
     await cancelAllNotifications();
 
     final now = DateTime.now();
     int notificationId = 0;
-    int currentHour = startTime.hour;
-    final reminderMinute = startTime.minute;
 
-    while (currentHour <= endTime.hour) {
-      final shouldSchedule = currentHour < endTime.hour ||
-          (currentHour == endTime.hour && reminderMinute <= endTime.minute);
-
-      if (shouldSchedule) {
-        final notificationTime = TimeOfDay(
-          hour: currentHour,
-          minute: reminderMinute,
-        );
-
+    if (isAllDayReminders) {
+      for (int hour = 0; hour < 24; hour++) {
         DateTime scheduledTime = DateTime(
           now.year,
           now.month,
           now.day,
-          notificationTime.hour,
-          notificationTime.minute,
+          hour,
+          0,
         );
 
         if (scheduledTime.isBefore(now)) {
@@ -116,8 +107,43 @@ class NotificationService {
           notificationId: notificationId++,
         );
       }
+    } else {
+      int currentHour = startTime.hour;
+      final reminderMinute = startTime.minute;
 
-      currentHour++;
+      while (currentHour <= endTime.hour) {
+        final shouldSchedule =
+            currentHour < endTime.hour ||
+            (currentHour == endTime.hour && reminderMinute <= endTime.minute);
+
+        if (shouldSchedule) {
+          final notificationTime = TimeOfDay(
+            hour: currentHour,
+            minute: reminderMinute,
+          );
+
+          DateTime scheduledTime = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            notificationTime.hour,
+            notificationTime.minute,
+          );
+
+          if (scheduledTime.isBefore(now)) {
+            scheduledTime = scheduledTime.add(const Duration(days: 1));
+          }
+
+          await scheduleNotification(
+            title: 'Time to drink water! 💧',
+            body: 'Stay hydrated! Remember to drink some water.',
+            scheduledTime: scheduledTime,
+            notificationId: notificationId++,
+          );
+        }
+
+        currentHour++;
+      }
     }
   }
 

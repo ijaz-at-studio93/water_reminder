@@ -4,6 +4,7 @@ import 'package:water_reminder/services/settings_service.dart';
 import 'package:water_reminder/services/water_service.dart';
 import 'package:water_reminder/screens/history_screen.dart';
 import 'package:water_reminder/screens/settings_screen.dart';
+import 'package:water_reminder/widgets/desktop_layout.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -33,284 +35,243 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
+  void _onNavigationChanged(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  Widget _buildCurrentScreen() {
+    switch (_selectedIndex) {
+      case 0:
+        return _buildHomeContent();
+      case 1:
+        return const HistoryScreen();
+      case 2:
+        return const SettingsScreen();
+      default:
+        return _buildHomeContent();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDesktop = DesktopLayout.isDesktop;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Water Reminder'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const HistoryScreen()),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Consumer2<WaterService, SettingsService>(
-        builder: (context, waterService, settingsService, child) {
-          final dailyGoal = settingsService.userSettings.dailyGoal;
-          final todayIntake = waterService.todayIntake;
-          final progress = todayIntake / dailyGoal;
+      appBar: isDesktop
+          ? null
+          : AppBar(
+              title: const Text('Water Reminder'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.history),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HistoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+      body: isDesktop
+          ? DesktopLayout(
+              selectedIndex: _selectedIndex,
+              onNavigationChanged: _onNavigationChanged,
+              body: _buildCurrentScreen(),
+            )
+          : _buildHomeContent(),
+    );
+  }
 
-          _animationController.animateTo(progress);
+  Widget _buildHomeContent() {
+    return Consumer2<WaterService, SettingsService>(
+      builder: (context, waterService, settingsService, child) {
+        final dailyGoal = settingsService.userSettings.dailyGoal;
+        final todayIntake = waterService.todayIntake;
+        final progress = todayIntake / dailyGoal;
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final screenWidth = constraints.maxWidth;
-              final screenHeight = constraints.maxHeight;
-              final isSmallScreen = screenWidth < 600;
-              final isMediumScreen = screenWidth >= 600 && screenWidth < 1200;
-              final isLargeScreen = screenWidth >= 1200;
+        _animationController.animateTo(progress);
 
-              final progressSize = isSmallScreen
-                  ? screenWidth * 0.65
-                  : isMediumScreen
-                  ? 300.0
-                  : 350.0;
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final screenWidth = constraints.maxWidth;
+            final screenHeight = constraints.maxHeight;
+            final isSmallScreen = screenWidth < 600;
+            final isMediumScreen = screenWidth >= 600 && screenWidth < 1200;
+            final isLargeScreen = screenWidth >= 1200;
 
-              final buttonSpacing = isSmallScreen ? 8.0 : 16.0;
-              final verticalSpacing = isSmallScreen ? 32.0 : 40.0;
-              final buttonPadding = isSmallScreen
-                  ? const EdgeInsets.symmetric(horizontal: 16, vertical: 12)
-                  : const EdgeInsets.symmetric(horizontal: 25, vertical: 15);
+            final isDesktop = DesktopLayout.isDesktop;
+            final progressSize = isDesktop
+                ? 400.0
+                : isSmallScreen
+                ? screenWidth * 0.65
+                : isMediumScreen
+                ? 300.0
+                : 350.0;
 
-              return Center(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isSmallScreen
-                        ? 16.0
+            final buttonSpacing = isDesktop
+                ? 20.0
+                : isSmallScreen
+                ? 8.0
+                : 16.0;
+            final verticalSpacing = isDesktop
+                ? 48.0
+                : isSmallScreen
+                ? 32.0
+                : 40.0;
+            final buttonPadding = isDesktop
+                ? const EdgeInsets.symmetric(horizontal: 32, vertical: 18)
+                : isSmallScreen
+                ? const EdgeInsets.symmetric(horizontal: 16, vertical: 12)
+                : const EdgeInsets.symmetric(horizontal: 25, vertical: 15);
+
+            return Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isDesktop
+                      ? 48.0
+                      : isSmallScreen
+                      ? 16.0
+                      : isLargeScreen
+                      ? 64.0
+                      : 32.0,
+                  vertical: isDesktop ? 48.0 : (isSmallScreen ? 16.0 : 32.0),
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: isDesktop
+                        ? 800
                         : isLargeScreen
-                        ? 64.0
-                        : 32.0,
-                    vertical: isSmallScreen ? 16.0 : 32.0,
+                        ? 600
+                        : double.infinity,
                   ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: isLargeScreen ? 600 : double.infinity,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(height: screenHeight * 0.05),
-                        AnimatedBuilder(
-                          animation: _animation,
-                          builder: (context, child) {
-                            return Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: progressSize,
-                                  height: progressSize,
-                                  child: CustomPaint(
-                                    painter: WaterProgressPainter(
-                                      progress: _animation.value,
-                                      backgroundColor: Theme.of(
-                                        context,
-                                      ).colorScheme.primary.withOpacity(0.2),
-                                      foregroundColor: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: screenHeight * 0.05),
+                      AnimatedBuilder(
+                        animation: _animation,
+                        builder: (context, child) {
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                width: progressSize,
+                                height: progressSize,
+                                child: CustomPaint(
+                                  painter: WaterProgressPainter(
+                                    progress: _animation.value,
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.primary.withOpacity(0.2),
+                                    foregroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                                 ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '${todayIntake.toInt()} ml',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .displayLarge
+                                        ?.copyWith(
+                                          fontSize: isSmallScreen ? 36.0 : 48.0,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                        ),
+                                  ),
+                                  Text(
+                                    'of ${dailyGoal.toInt()} ml',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          fontSize: isSmallScreen ? 16.0 : 20.0,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      SizedBox(height: verticalSpacing),
+                      isSmallScreen
+                          ? Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    Text(
-                                      '${todayIntake.toInt()} ml',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .displayLarge
-                                          ?.copyWith(
-                                            fontSize: isSmallScreen
-                                                ? 36.0
-                                                : 48.0,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                          ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: buttonSpacing / 2,
+                                        ),
+                                        child: _buildWaterButton(
+                                          context,
+                                          waterService,
+                                          200,
+                                          buttonPadding,
+                                        ),
+                                      ),
                                     ),
-                                    Text(
-                                      'of ${dailyGoal.toInt()} ml',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge
-                                          ?.copyWith(
-                                            fontSize: isSmallScreen
-                                                ? 16.0
-                                                : 20.0,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
-                                          ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: buttonSpacing / 2,
+                                        ),
+                                        child: _buildWaterButton(
+                                          context,
+                                          waterService,
+                                          300,
+                                          buttonPadding,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: buttonSpacing / 2,
+                                        ),
+                                        child: _buildWaterButton(
+                                          context,
+                                          waterService,
+                                          500,
+                                          buttonPadding,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ],
-                            );
-                          },
-                        ),
-                        SizedBox(height: verticalSpacing),
-                        isSmallScreen
-                            ? Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Expanded(
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: buttonSpacing / 2,
-                                          ),
-                                          child: _buildWaterButton(
-                                            context,
-                                            waterService,
-                                            200,
-                                            buttonPadding,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: buttonSpacing / 2,
-                                          ),
-                                          child: _buildWaterButton(
-                                            context,
-                                            waterService,
-                                            300,
-                                            buttonPadding,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: buttonSpacing / 2,
-                                          ),
-                                          child: _buildWaterButton(
-                                            context,
-                                            waterService,
-                                            500,
-                                            buttonPadding,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 16),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        _showCustomAmountDialog(
-                                          context,
-                                          waterService,
-                                        );
-                                      },
-                                      icon: const Icon(
-                                        Icons.add_circle_outline,
-                                      ),
-                                      label: const Text('Custom Amount'),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: buttonPadding,
-                                        textStyle: Theme.of(
-                                          context,
-                                        ).textTheme.titleMedium,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: OutlinedButton.icon(
-                                          onPressed: waterService.waterIntakes.isEmpty
-                                              ? null
-                                              : () {
-                                                  _showUndoConfirmationDialog(
-                                                    context,
-                                                    waterService,
-                                                  );
-                                                },
-                                          icon: const Icon(Icons.undo),
-                                          label: const Text('Undo'),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: buttonPadding,
-                                            textStyle: Theme.of(
-                                              context,
-                                            ).textTheme.titleMedium,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: buttonSpacing),
-                                      Expanded(
-                                        child: OutlinedButton.icon(
-                                          onPressed: waterService.todayIntakes.isEmpty
-                                              ? null
-                                              : () {
-                                                  _showResetConfirmationDialog(
-                                                    context,
-                                                    waterService,
-                                                  );
-                                                },
-                                          icon: const Icon(Icons.refresh),
-                                          label: const Text('Reset'),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: buttonPadding,
-                                            textStyle: Theme.of(
-                                              context,
-                                            ).textTheme.titleMedium,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      _buildWaterButton(
-                                        context,
-                                        waterService,
-                                        200,
-                                        buttonPadding,
-                                      ),
-                                      _buildWaterButton(
-                                        context,
-                                        waterService,
-                                        300,
-                                        buttonPadding,
-                                      ),
-                                      _buildWaterButton(
-                                        context,
-                                        waterService,
-                                        500,
-                                        buttonPadding,
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 20),
-                                  ElevatedButton.icon(
+                                SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
                                     onPressed: () {
                                       _showCustomAmountDialog(
                                         context,
@@ -320,23 +281,23 @@ class _HomeScreenState extends State<HomeScreen>
                                     icon: const Icon(Icons.add_circle_outline),
                                     label: const Text('Custom Amount'),
                                     style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: isMediumScreen
-                                            ? 40.0
-                                            : 50.0,
-                                        vertical: isMediumScreen ? 16.0 : 18.0,
-                                      ),
+                                      padding: buttonPadding,
                                       textStyle: Theme.of(
                                         context,
                                       ).textTheme.titleMedium,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
                                   ),
-                                  SizedBox(height: 20),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      OutlinedButton.icon(
-                                        onPressed: waterService.waterIntakes.isEmpty
+                                ),
+                                SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed:
+                                            waterService.waterIntakes.isEmpty
                                             ? null
                                             : () {
                                                 _showUndoConfirmationDialog(
@@ -347,20 +308,18 @@ class _HomeScreenState extends State<HomeScreen>
                                         icon: const Icon(Icons.undo),
                                         label: const Text('Undo'),
                                         style: OutlinedButton.styleFrom(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: isMediumScreen
-                                                ? 30.0
-                                                : 35.0,
-                                            vertical: isMediumScreen ? 14.0 : 16.0,
-                                          ),
+                                          padding: buttonPadding,
                                           textStyle: Theme.of(
                                             context,
                                           ).textTheme.titleMedium,
                                         ),
                                       ),
-                                      SizedBox(width: 20),
-                                      OutlinedButton.icon(
-                                        onPressed: waterService.todayIntakes.isEmpty
+                                    ),
+                                    SizedBox(width: buttonSpacing),
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed:
+                                            waterService.todayIntakes.isEmpty
                                             ? null
                                             : () {
                                                 _showResetConfirmationDialog(
@@ -371,31 +330,162 @@ class _HomeScreenState extends State<HomeScreen>
                                         icon: const Icon(Icons.refresh),
                                         label: const Text('Reset'),
                                         style: OutlinedButton.styleFrom(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: isMediumScreen
-                                                ? 30.0
-                                                : 35.0,
-                                            vertical: isMediumScreen ? 14.0 : 16.0,
-                                          ),
+                                          padding: buttonPadding,
                                           textStyle: Theme.of(
                                             context,
                                           ).textTheme.titleMedium,
                                         ),
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    _buildWaterButton(
+                                      context,
+                                      waterService,
+                                      200,
+                                      buttonPadding,
+                                    ),
+                                    _buildWaterButton(
+                                      context,
+                                      waterService,
+                                      300,
+                                      buttonPadding,
+                                    ),
+                                    _buildWaterButton(
+                                      context,
+                                      waterService,
+                                      500,
+                                      buttonPadding,
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 20),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    _showCustomAmountDialog(
+                                      context,
+                                      waterService,
+                                    );
+                                  },
+                                  icon: const Icon(Icons.add_circle_outline),
+                                  label: const Text('Custom Amount'),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: isMediumScreen
+                                          ? 40.0
+                                          : DesktopLayout.isDesktop
+                                          ? 60.0
+                                          : 50.0,
+                                      vertical: isMediumScreen
+                                          ? 16.0
+                                          : DesktopLayout.isDesktop
+                                          ? 20.0
+                                          : 18.0,
+                                    ),
+                                    textStyle: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
-                                ],
-                              ),
-                        SizedBox(height: screenHeight * 0.05),
-                      ],
-                    ),
+                                ),
+                                SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    OutlinedButton.icon(
+                                      onPressed:
+                                          waterService.waterIntakes.isEmpty
+                                          ? null
+                                          : () {
+                                              _showUndoConfirmationDialog(
+                                                context,
+                                                waterService,
+                                              );
+                                            },
+                                      icon: const Icon(Icons.undo),
+                                      label: const Text('Undo'),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: isMediumScreen
+                                              ? 30.0
+                                              : DesktopLayout.isDesktop
+                                              ? 40.0
+                                              : 35.0,
+                                          vertical: isMediumScreen
+                                              ? 14.0
+                                              : DesktopLayout.isDesktop
+                                              ? 18.0
+                                              : 16.0,
+                                        ),
+                                        textStyle: Theme.of(
+                                          context,
+                                        ).textTheme.titleMedium,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 20),
+                                    OutlinedButton.icon(
+                                      onPressed:
+                                          waterService.todayIntakes.isEmpty
+                                          ? null
+                                          : () {
+                                              _showResetConfirmationDialog(
+                                                context,
+                                                waterService,
+                                              );
+                                            },
+                                      icon: const Icon(Icons.refresh),
+                                      label: const Text('Reset'),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: isMediumScreen
+                                              ? 30.0
+                                              : DesktopLayout.isDesktop
+                                              ? 40.0
+                                              : 35.0,
+                                          vertical: isMediumScreen
+                                              ? 14.0
+                                              : DesktopLayout.isDesktop
+                                              ? 18.0
+                                              : 16.0,
+                                        ),
+                                        textStyle: Theme.of(
+                                          context,
+                                        ).textTheme.titleMedium,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                      SizedBox(height: isDesktop ? 40 : screenHeight * 0.05),
+                    ],
                   ),
                 ),
-              );
-            },
-          );
-        },
-      ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -412,6 +502,7 @@ class _HomeScreenState extends State<HomeScreen>
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         padding: padding,
         textStyle: Theme.of(context).textTheme.titleMedium,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Text('$amount ml'),
     );
@@ -535,14 +626,12 @@ class WaterProgressPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth) / 2;
 
-    // Background circle
     final backgroundPaint = Paint()
       ..color = backgroundColor
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
     canvas.drawCircle(center, radius, backgroundPaint);
 
-    // Foreground arc
     final foregroundPaint = Paint()
       ..color = foregroundColor
       ..strokeWidth = strokeWidth
@@ -551,8 +640,8 @@ class WaterProgressPainter extends CustomPainter {
 
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -0.5 * 3.14159, // Start at the top
-      2 * 3.14159 * progress, // Sweep angle
+      -0.5 * 3.14159,
+      2 * 3.14159 * progress,
       false,
       foregroundPaint,
     );

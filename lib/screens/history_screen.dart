@@ -3,14 +3,19 @@ import 'package:provider/provider.dart';
 import 'package:water_reminder/services/water_service.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:water_reminder/widgets/desktop_layout.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = DesktopLayout.isDesktop;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Water Intake History')),
+      appBar: isDesktop
+          ? null
+          : AppBar(title: const Text('Water Intake History')),
       body: Consumer<WaterService>(
         builder: (context, waterService, child) {
           final waterIntakes = waterService.waterIntakes.reversed.toList();
@@ -57,13 +62,22 @@ class HistoryScreen extends StatelessWidget {
               final isSmallScreen = screenWidth < 600;
               final isLargeScreen = screenWidth >= 1200;
 
-              final horizontalPadding = isSmallScreen
+              final isDesktop = DesktopLayout.isDesktop;
+              final horizontalPadding = isDesktop
+                  ? 48.0
+                  : isSmallScreen
                   ? 16.0
                   : isLargeScreen
                   ? 64.0
                   : 32.0;
-              final maxWidth = isLargeScreen ? 1000.0 : double.infinity;
-              final chartHeight = isSmallScreen
+              final maxWidth = isDesktop
+                  ? 1200.0
+                  : isLargeScreen
+                  ? 1000.0
+                  : double.infinity;
+              final chartHeight = isDesktop
+                  ? 400.0
+                  : isSmallScreen
                   ? screenHeight * 0.3
                   : isLargeScreen
                   ? 350.0
@@ -141,7 +155,7 @@ class HistoryScreen extends StatelessWidget {
                               final intake = waterIntakes[index];
                               return Card(
                                 margin: EdgeInsets.symmetric(
-                                  horizontal: isLargeScreen ? 0 : 0,
+                                  horizontal: isDesktop ? 16 : 0,
                                   vertical: 8,
                                 ),
                                 child: ListTile(
