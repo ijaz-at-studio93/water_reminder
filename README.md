@@ -28,7 +28,7 @@ To get a local copy up and running, follow these simple steps.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/water_reminder.git
+   git clone git@github.com:ijaz-at-studio93/water_reminder.git
    cd water_reminder
    ```
 2. Get dependencies:
